@@ -1,13 +1,12 @@
 #!/bin/bash
 # Quick wireless share script
 
+DIR=$HOME/Shared
 PORT=8000
-DIR=${1:-$(pwd)}
-
-cd "$DIR"
 IP=$(hostname -I | awk '{print $1}')
 
-echo "📁 Sharing: $HOME/Share"
+mkdir -p $DIR
+echo "📁 Sharing: $DIR"
 echo "📱 On Android, open: http://$IP:$PORT"
 echo ""
 echo "To upload FROM Android:"

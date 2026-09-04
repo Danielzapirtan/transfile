@@ -1,21 +1,12 @@
 #!/usr/bin/env python3
-"""Minimal HTTP file transfer server with optional upload, basic auth and TLS.
-
-Usage examples:
-  ./scripts/transfile_server.py --bind 0.0.0.0 --port 8080 --enable-upload
-  curl http://PHONE_IP:8080/somefile -O
-  curl -F "file=@localfile" http://PHONE_IP:8080/upload
-
-This is intentionally dependency-free (stdlib only) for backward compatibility.
+"""Transfile package entry point
 """
 
 import argparse
 import base64
 import http.server
-import io
 import os
 import ssl
-import sys
 from http import HTTPStatus
 import cgi
 
@@ -85,10 +76,8 @@ class TransferHandler(http.server.SimpleHTTPRequestHandler):
             return False
         return True
 
-    # For GET/HEAD, delegate to SimpleHTTPRequestHandler which uses self.server.directory
 
-
-def run():
+def main():
     parser = argparse.ArgumentParser(description='Minimal IP file transfer HTTP server (download + optional upload)')
     parser.add_argument('--bind', default='0.0.0.0', help='Bind address (default: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=8080, help='Port to listen (default: 8080)')
@@ -124,10 +113,4 @@ def run():
 
 
 if __name__ == '__main__':
-    # Backwards-compatible wrapper to package entrypoint
-    try:
-        from transfile.server import main
-        main()
-    except Exception:
-        # Fallback to original run when package import fails
-        run()
+    main()

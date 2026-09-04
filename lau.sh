@@ -7,7 +7,7 @@ DIR=${1:-$(pwd)}
 cd "$DIR"
 IP=$(hostname -I | awk '{print $1}')
 
-echo "📁 Sharing: $DIR"
+echo "📁 Sharing: $HOME/Share"
 echo "📱 On Android, open: http://$IP:$PORT"
 echo ""
 echo "To upload FROM Android:"

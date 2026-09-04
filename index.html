@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Share Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .clear-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .launch-btn {
+            background: #4CAF50;
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            display: block;
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            display: block;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #d32f2f;
+            display: block;
+        }
+        
+        .saved-ip {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .saved-ip.show {
+            display: block;
+        }
+        
+        .saved-ip-text {
+            font-weight: bold;
+            color: #764ba2;
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+        
+        .hint {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 File Share Launcher</h1>
+        <p class="subtitle">Quick access to your file share server</p>
+        
+        <div class="input-group">
+            <label for="ip-input">Server IP Address:</label>
+            <input 
+                type="text" 
+                id="ip-input" 
+                placeholder="e.g., 192.168.1.100"
+                autocomplete="off"
+            >
+        </div>
+        
+        <div class="button-group">
+            <button class="save-btn" onclick="saveIP()">💾 Save IP</button>
+            <button class="clear-btn" onclick="clearIP()">🗑️ Clear</button>
+        </div>
+        
+        <div class="saved-ip" id="saved-ip-display">
+            <div>Saved IP Address:</div>
+            <div class="saved-ip-text" id="saved-ip-text"></div>
+        </div>
+        
+        <button class="launch-btn" onclick="launchServer()">
+            🚀 Open File Share Server
+        </button>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="hint">
+            The IP address is stored locally in your browser
+        </div>
+    </div>
+
+    <script>
+        // Key for localStorage
+        const STORAGE_KEY = 'fileShareServerIP';
+        
+        // Get DOM elements
+        const ipInput = document.getElementById('ip-input');
+        const savedIPDisplay = document.getElementById('saved-ip-display');
+        const savedIPText = document.getElementById('saved-ip-text');
+        const status = document.getElementById('status');
+        
+        // Load saved IP on page load
+        function loadSavedIP() {
+            const savedIP = localStorage.getItem(STORAGE_KEY);
+            
+            if (savedIP) {
+                ipInput.value = savedIP;
+                savedIPText.textContent = savedIP;
+                savedIPDisplay.classList.add('show');
+                showStatus(`Loaded saved IP: ${savedIP}`, 'info');
+            }
+        }
+        
+        // Save IP to localStorage
+        function saveIP() {
+            const ip = ipInput.value.trim();
+            
+            // Validate IP format (basic validation)
+            if (!ip) {
+                showStatus('Please enter an IP address', 'error');
+                return;
+            }
+            
+            // Basic IP validation (IPv4)
+            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+            if (!ipPattern.test(ip)) {
+                showStatus('Please enter a valid IP address (e.g., 192.168.1.100)', 'error');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem(STORAGE_KEY, ip);
+            
+            // Update display
+            savedIPText.textContent = ip;
+            savedIPDisplay.classList.add('show');
+            
+            showStatus(`IP address ${ip} saved successfully!`, 'success');
+        }
+        
+        // Clear IP from localStorage
+        function clearIP() {
+            localStorage.removeItem(STORAGE_KEY);
+            
+            // Clear input and display
+            ipInput.value = '';
+            savedIPDisplay.classList.remove('show');
+            
+            showStatus('IP address cleared from storage', 'info');
+            
+            // Focus on input for new entry
+            ipInput.focus();
+        }
+        
+        // Launch the file share server in new tab
+        function launchServer() {
+            const savedIP = localStorage.getItem(STORAGE_KEY);
+            
+            if (savedIP) {
+                const url = `http://${savedIP}:8000`;
+                
+                // Show status
+                showStatus(`Opening ${url}...`, 'info');
+                
+                // Open in new tab
+                window.open(url, '_blank');
+            } else {
+                showStatus('No IP address saved. Please save an IP first.', 'error');
+                
+                // Focus on input
+                ipInput.focus();
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = 'status ' + type;
+            
+            // Auto-hide after 3 seconds (except for errors)
+            if (type !== 'error') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Allow pressing Enter to save and launch
+        ipInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                saveIP();
+                // Optional: launch immediately
+                // launchServer();
+            }
+        });
+        
+        // Load saved IP when page loads
+        loadSavedIP();
+    </script>
+</body>
+</html>

@@ -18,7 +18,8 @@ from pathlib import Path
 from datetime import datetime
 
 PORT = 8000
-DIRECTORY = os.getcwd()
+DIRECTORY = Path.home() / "Shared"
+#DIRECTORY = os.getcwd()
 UPLOAD_DIR = os.path.join(DIRECTORY, "uploads")
 
 # Create upload directory
